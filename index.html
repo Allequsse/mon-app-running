@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Générateur de Séance</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; line-height: 1.6; background: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #e67e22; }
+        .step { background: #eee; padding: 10px; margin: 10px 0; border-left: 5px solid #e67e22; display: flex; gap: 10px; }
+        button { cursor: pointer; padding: 10px; border: none; border-radius: 4px; }
+        .btn-add { background: #27ae60; color: white; }
+        .btn-download { background: #2980b9; color: white; width: 100%; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>🏃‍♂️ Ma Séance Running</h1>
+    <p>Ajoute tes blocs d'entraînement ci-dessous :</p>
+    
+    <div id="workout-steps">
+        </div>
+
+    <button class="btn-add" onclick="addStep()">+ Ajouter un bloc</button>
+    <button class="btn-download" onclick="downloadWorkout()">💾 Télécharger la séance (.zwo)</button>
+</div>
+
+<script>
+    // Ajoute un bloc par défaut
+    function addStep() {
+        const container = document.getElementById('workout-steps');
+        const div = document.createElement('div');
+        div.className = 'step';
+        div.innerHTML = `
+            <input type="number" placeholder="Durée (sec)" class="duration" value="300">
+            <select class="type">
+                <option value="SteadyState">Course</option>
+                <option value="Rest">Repos</option>
+            </select>
+        `;
+        container.appendChild(div);
+    }
+
+    function downloadWorkout() {
+        const steps = document.querySelectorAll('.step');
+        let xmlSteps = "";
+
+        steps.forEach(step => {
+            const duration = step.querySelector('.duration').value;
+            const type = step.querySelector('.type').value;
+            // Structure simple en XML pour Zwift/TrainingPeaks
+            xmlSteps += `    <${type} Duration="${duration}" Power="0.7" />\n`;
+        });
+
+        const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<workout_file>
+  <author>Mon App</author>
+  <name>Ma Seance Custom</name>
+  <sportType>run</sportType>
+  <workout>\n${xmlSteps}  </workout>
+</workout_file>`;
+
+        const blob = new Blob([xmlContent], { type: 'text/xml' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "ma_seance.zwo";
+        a.click();
+    }
+
+    // On lance un premier bloc au chargement
+    addStep();
+</script>
+
+</body>
+</html>
